@@ -1,84 +1,104 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import iziToast from "izitoast/dist/js/iziToast";
+import "izitoast/dist/css/iziToast.min.css";
 
- let calendar = new flatpickr("#datetime-picker", {
+
+const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
-   }
- })
-  
-let userSelectedDate = {
-  onClose(userSelectedDate) {
-    console.log(userSelectedDate[0]);
-   }
+    const selectedDate = selectedDates[0];
+    const currentDate = new Date();
+
+
+    if (selectedDate <= currentDate) {
+      iziToast.error({
+        title: "Error",
+        message: "Please choose a date in the future",
+      });
+
+
+      document.querySelector('[data-start]').disabled = true;
+    } else {
+     
+      document.querySelector('[data-start]').disabled = false;
+    }
+  },
+};
+
+
+flatpickr("#datetime-picker", options);
+
+
+function addLeadingZero(value) {
+  return value < 10 ? `0${value}` : value;
 }
- 
 
-const startBtn = document.querySelector('.btn');
-
-class Timer {
-  constructor(tick) { 
-    this.tick = tick;
-    this.isActive = false;
-  }
-  
-  
-  start() {
-    if (this.isActive) return;
-    this.isActive = true;
-    this.initTime = Date.now();
-    console.log(this.initTime);
-
-    this.intervalId = setInterval(() => {
-      const current = Date.now();
-      const diff = current - this.initTime;
-      const timeObj = this.#convertMs(diff);
-      this.tick(timeObj);
-    }, 1000);
-  }
-
-  #convertMs(ms) {
-  // Number of milliseconds per unit of time
+function convertMs(ms) {
   const second = 1000;
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
 
-  // Remaining days
+
   const days = Math.floor(ms / day);
-  // Remaining hours
   const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
   const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+
 
   return { days, hours, minutes, seconds };
 }
 
+
+let countdownInterval;
+let targetDate;
+
+
+function updateTimer() {
+  const currentDate = new Date();
+  const difference = targetDate - currentDate;
+
+
+  if (difference <= 0) {
+   
+    clearInterval(countdownInterval);
+    
+    updateInterface({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    return;
+  }
+
+
+  const timeLeft = convertMs(difference);
+  updateInterface(timeLeft);
 }
 
-const timer = new Timer();
 
-startBtn.addEventListener('click', () => {
-  timer.start();
+function updateInterface({ days, hours, minutes, seconds }) {
+  document.querySelector('[data-days]').textContent = addLeadingZero(days);
+  document.querySelector('[data-hours]').textContent = addLeadingZero(hours);
+  document.querySelector('[data-minutes]').textContent = addLeadingZero(minutes);
+  document.querySelector('[data-seconds]').textContent = addLeadingZero(seconds);
+}
+
+
+document.querySelector('[data-start]').addEventListener('click', () => {
+
+  document.querySelector('[data-start]').disabled = true;
+
+
+  const selectedDate = flatpickr("#datetime-picker").selectedDates[0];
+ 
+  targetDate = selectedDate;
+
+  updateTimer();
+
+
+  countdownInterval = setInterval(updateTimer, 1000);
 });
-
-function tick({ days, hours, minutes, seconds }) {
-  const timeStr = `${days}:${hours}:${minutes}:${seconds}`;
-  console.log(timeStr);
-}
-
-
-
-
-
-
-
 
 
 
