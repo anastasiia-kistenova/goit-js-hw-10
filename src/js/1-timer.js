@@ -4,7 +4,8 @@ import iziToast from "izitoast/dist/js/iziToast";
 import "izitoast/dist/css/iziToast.min.css";
 
 
-const options = {
+const startButton = document.querySelector('[data-start]');
+const dateTimePicker = flatpickr("#datetime-picker", {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
@@ -20,28 +21,19 @@ const options = {
         message: "Please choose a date in the future",
       });
 
-      document.querySelector('[data-start]').disabled = true;
+
+      startButton.disabled = true;
     } else {
-     
-      document.querySelector('[data-start]').disabled = false;
-
-      targetDate = selectedDate;
-
-      if (!countdownInterval) {
-        updateTimer();
-        countdownInterval = setInterval(updateTimer, 1000);
-      }
+      startButton.disabled = false;
     }
   },
-};
-
-
-flatpickr("#datetime-picker", options);
+});
 
 
 function addLeadingZero(value) {
   return value < 10 ? `0${value}` : value;
 }
+
 
 function convertMs(ms) {
   const second = 1000;
@@ -70,10 +62,9 @@ function updateTimer() {
 
 
   if (difference <= 0) {
-   
     clearInterval(countdownInterval);
-    
     updateInterface({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    startButton.disabled = false;
     return;
   }
 
@@ -90,20 +81,25 @@ function updateInterface({ days, hours, minutes, seconds }) {
   document.querySelector('[data-seconds]').textContent = addLeadingZero(seconds);
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelector('[data-start]').disabled = true;
-});
+
+startButton.disabled = true;
+
 
 document.querySelector('[data-start]').addEventListener('click', () => {
-document.querySelector('[data-start]').disabled = true;
+  startButton.disabled = true;
 
-const selectedDate = flatpickr("#datetime-picker").selectedDates[0];
- 
-targetDate = selectedDate;
 
-updateTimer();
+  const selectedDate = dateTimePicker.selectedDates[0];
 
-countdownInterval = setInterval(updateTimer, 1000);
+
+  targetDate = selectedDate;
+
+
+  clearInterval(countdownInterval);
+  updateTimer();
+
+
+  countdownInterval = setInterval(updateTimer, 1000);
 });
 
 
