@@ -20,11 +20,17 @@ const options = {
         message: "Please choose a date in the future",
       });
 
-
       document.querySelector('[data-start]').disabled = true;
     } else {
      
       document.querySelector('[data-start]').disabled = false;
+
+      targetDate = selectedDate;
+
+      if (!countdownInterval) {
+        updateTimer();
+        countdownInterval = setInterval(updateTimer, 1000);
+      }
     }
   },
 };
@@ -84,20 +90,20 @@ function updateInterface({ days, hours, minutes, seconds }) {
   document.querySelector('[data-seconds]').textContent = addLeadingZero(seconds);
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('[data-start]').disabled = true;
+});
 
 document.querySelector('[data-start]').addEventListener('click', () => {
+document.querySelector('[data-start]').disabled = true;
 
-  document.querySelector('[data-start]').disabled = true;
-
-
-  const selectedDate = flatpickr("#datetime-picker").selectedDates[0];
+const selectedDate = flatpickr("#datetime-picker").selectedDates[0];
  
-  targetDate = selectedDate;
+targetDate = selectedDate;
 
-  updateTimer();
+updateTimer();
 
-
-  countdownInterval = setInterval(updateTimer, 1000);
+countdownInterval = setInterval(updateTimer, 1000);
 });
 
 
